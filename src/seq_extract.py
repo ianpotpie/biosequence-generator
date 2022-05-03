@@ -11,17 +11,17 @@ PROTEIN_SYMBOLS = ["A", "G", "I", "L", "P", "V", "F", "W", "Y", "D",
 def extract_sequence(parent_sequence, prior, error_rate, insertion_rate, deletion_rate, symbols):
     insertion_open, insertion_extend = insertion_rate
     deletion_open, deletion_extend = deletion_rate
-    state = random.choices(["M", "I", "D"], prior)
+    state = random.choices(["M", "I", "D"], prior, k=1)[0]
 
     extracted_sequence = ""
     for symbol in parent_sequence:
         if state == "M":
             if random.random() <= error_rate:
-                extracted_sequence += random.choices(symbols, [s != symbol for s in symbols])
+                extracted_sequence += random.choices(symbols, [s != symbol for s in symbols])[0]
             else:
                 extracted_sequence += symbol
             state = random.choices(["M", "I", "D"], [1 - (insertion_open + deletion_open),
-                                                     insertion_open, deletion_open])
+                                                     insertion_open, deletion_open])[0]
 
         elif state == "I":
             extracted_sequence += random.choice(symbols)
@@ -33,7 +33,7 @@ def extract_sequence(parent_sequence, prior, error_rate, insertion_rate, deletio
             if random.random() > insertion_extend:
                 state = "M"
 
-        return extracted_sequence
+    return extracted_sequence
 
 
 def main():
@@ -63,7 +63,6 @@ def main():
     parser.add_argument("--type", "-t", type=str, choices=["DNA", "RNA", "PROTEIN"], default="PROTEIN",
                         help="Defines which biosequence symbols to use in the sequencing.")
     args = parser.parse_args(sys.argv[1:])
-    print(args.insertion_rate)
 
     if args.type == "DNA":
         symbols = DNA_SYMBOLS
