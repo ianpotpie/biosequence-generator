@@ -6,8 +6,8 @@ import random
 def uniform_extraction(parent_sequence, min_length, max_length):
     min_length = 0 if min_length is None else min_length
     max_length = len(parent_sequence) if max_length is None else max_length
-    seq_length = random.uniform(min_length, max_length)
-    index = random.uniform(0, len(parent_sequence) - seq_length)
+    seq_length = random.randint(min_length, max_length)
+    index = random.randint(0, len(parent_sequence) - seq_length)
     return parent_sequence[index: index + seq_length]
 
 
