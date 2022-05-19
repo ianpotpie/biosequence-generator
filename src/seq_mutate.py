@@ -6,8 +6,8 @@ DNA_SYMBOLS = ["A", "C", "G", "T"]
 RNA_SYMBOLS = ["A", "C", "G", "T", "U"]
 PROTEIN_SYMBOLS = ["A", "G", "I", "L", "P", "V", "F", "W", "Y", "D",
                    "E", "R", "H", "K", "S", "T", "C", "M", "N", "Q"]
-ALPHABET = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
-            "V", "W", "X", "Y", "Z"]
+ALPHABET = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+            "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
 
 
 def mutate_sequence(sequence, symbols, error_rate, prior=None, insertion_rates=None, deletion_rates=None):
