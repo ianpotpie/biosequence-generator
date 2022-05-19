@@ -136,6 +136,5 @@ class ScoringScheme:
         probs = probs.T * prior
         probs = probs.T * prior
         for i in range(probs.shape[0]):
-            probs[i] /= sum(probs[i])
+            probs[i] /= sum(probs[i])  # normalizes so that all rows sum to 1
         return probs
-
