@@ -22,29 +22,33 @@ def mutate_sequence(sequence, symbols, error_rate, prior=None, insertion_rates=N
     :param deletion_rates: the opening and extension probabilities of a deletion
     :return: the new mutated sequence
     """
-    insertion_open, insertion_extend = (0.0, 0.0) if insertion_rates is None else insertion_rates
-    deletion_open, deletion_extend = (0.0, 0.0) if deletion_rates is None else deletion_rates
+    ins_open, ins_extend = (0.0, 0.0) if insertion_rates is None else insertion_rates
+    del_open, del_extend = (0.0, 0.0) if deletion_rates is None else deletion_rates
     state = "M" if prior is None else random.choices(["M", "I", "D"], prior, k=1)[0]
+    substitution = 1 - (ins_open + del_open)
+
+    ins_to_sub = (1 - ins_extend) * substitution / (substitution + del_open)
+    ins_to_del = (1 - ins_extend) * del_open / (substitution + del_open)
+    del_to_sub = (1 - ins_extend) * substitution / (substitution + ins_open)
+    del_to_ins = (1 - ins_extend) * ins_open / (substitution + ins_open)
 
     mutated_sequence = ""
-    for symbol in sequence:
+    index = 0
+    while index < len(sequence) or state == "I":
         if state == "M":
-            if random.random() <= error_rate:
-                mutated_sequence += random.choices(symbols, [s != symbol for s in symbols])[0]
-            else:
-                mutated_sequence += symbol
-            state = random.choices(["M", "I", "D"], [1 - (insertion_open + deletion_open),
-                                                     insertion_open, deletion_open])[0]
+            symbol = sequence[index]
+            error = random.choices(symbols, [s != symbol for s in symbols])[0]
+            mutated_sequence += symbol if random.random() > error_rate else error
+            state = random.choices(["M", "I", "D"], [substitution, ins_open, del_open])[0]
+            index += 1
 
         elif state == "I":
             mutated_sequence += random.choice(symbols)
-            while random.random() <= insertion_extend:
-                mutated_sequence += random.choice(symbols)
-            state = "M"
+            state = random.choices(["M", "I", "D"], [ins_to_sub, ins_extend, ins_to_del])[0]
 
         else:  # state == "D"
-            if random.random() > insertion_extend:
-                state = "M"
+            state = random.choices(["M", "I", "D"], [del_to_sub, del_to_ins, del_extend])[0]
+            index += 1
 
     return mutated_sequence
 
@@ -66,27 +70,27 @@ def main():
     parser.add_argument("--error-rate", "-e", type=float, default=0.1,
                         help="If a substitution matrix is not provided, then we uniformly choose between non-matching"
                              "symbols with the provided probability.")
-    parser.add_argument("--insertion-rate", "-i", type=float, nargs=2, default=[0.0, 0.0],
+    parser.add_argument("--insertion-rates", "-i", type=float, nargs=2, default=[0.0, 0.0],
                         help="The probability of transitioning to the insertion state and the probability of remaining"
                              "in the insertion state once there (the probability of extending the insertion)")
-    parser.add_argument("--deletion-rate", "-d", type=float, nargs=2, default=[0.0, 0.0],
+    parser.add_argument("--deletion-rates", "-d", type=float, nargs=2, default=[0.0, 0.0],
                         help="The probability of transitioning to the deletion state and the probability of remaining"
                              "in the deletion state once there (the probability of extending the deletion)")
-    parser.add_argument("--type", "-t", type=str, choices=["DNA", "RNA", "PROTEIN", "ALPHABET"], default="PROTEIN",
+    parser.add_argument("--alphabet", "-a", type=str, choices=["DNA", "RNA", "PROTEIN", "ALPHABET"], default="PROTEIN",
                         help="Defines which biosequence symbols to use in the sequencing.")
     args = parser.parse_args(sys.argv[1:])
 
-    if args.type == "DNA":
+    if args.alphabet == "DNA":
         symbols = DNA_SYMBOLS
-    elif args.type == "RNA":
+    elif args.alphabet == "RNA":
         symbols = RNA_SYMBOLS
-    elif args.type == "PROTEIN":
+    elif args.alphabet == "PROTEIN":
         symbols = PROTEIN_SYMBOLS
     else:
         symbols = ALPHABET
 
     new_sequence = mutate_sequence(args.sequence, symbols, args.error_rate, args.prior,
-                                   args.insertion_rate, args.deletion_rate)
+                                   args.insertion_rates, args.deletion_rates)
 
     print(new_sequence)
 
